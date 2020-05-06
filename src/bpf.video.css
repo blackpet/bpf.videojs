@@ -1,0 +1,5 @@
+
+/** overwrite video-js [fantasy theme] css **/
+.vjs-theme-fantasy .vjs-playback-rate > .vjs-menu-button, .vjs-playback-rate .vjs-playback-rate-value {top: 12px;}
+.vjs-theme-fantasy.video-js .vjs-current-time, .vjs-no-flex .vjs-current-time {display: block;}
+.vjs-theme-fantasy .vjs-remaining-time {display: block;}
