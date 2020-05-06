@@ -16,8 +16,6 @@ require('video.js/dist/video-js.css')
 require('@videojs/themes/dist/fantasy/index.css')
 require('./bpf.video.css')
 
-import * as $ from 'jquery'
-
 let videoId;
 
 const bpfOption = {
