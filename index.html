@@ -10,6 +10,9 @@
 
 <h2>youtube
 <button id="playYoutubeBtn">play</button>
+    <button id="debuggingYoutubeBtn" disabled>toggle debugging</button>
+    <button id="debuggingYoutubeBtn2" disabled>enable debugging</button>
+    <button id="debuggingYoutubeBtn3" disabled>disable debugging</button>
 </h2>
 <video id="my-video" class="video-js vjs-theme-fantasy">
     <source src="https://www.youtube.com/watch?v=ahaosybofjs" type="video/youtube">
@@ -17,6 +20,9 @@
 
 <h2>mp4
 <button id="playMp4Btn">play</button>
+<button id="debuggingMp4Btn" disabled>toggle debugging</button>
+<button id="debuggingMp4Btn2" disabled>enable debugging</button>
+<button id="debuggingMp4Btn3" disabled>disable debugging</button>
 </h2>
 <video id="my-video2" class="video-js vjs-theme-fantasy">
     <source src="https://www.radiantmediaplayer.com/media/bbb-360p.mp4" type="video/mp4">
@@ -27,34 +33,52 @@
 <script>
 
   $(function () {
-    $('#playYoutubeBtn').click(function () {
-      var youtube = bpf.videojs('my-video', {
-        debug: true,
-        callback: function (timer, param) {
-          console.log('youtube callback!!!', param);
-        },
-        ready: function () {
-          console.log('youtube ready!!!!!!!!!!!!!!!');
-        }
-      })
-    });
+    $('#playYoutubeBtn').click(playYoutube);
 
     $('#playMp4Btn').click(playMp4);
   });
 
+  function playYoutube() {
+    var bpfOption = {
+      debug: true,
+      callback: function (timer, param) {
+        console.log('youtube callback!!!', timer, param);
+      },
+      ready: function () {
+        console.log('youtube ready!!!!!!!!!!!!!!!');
+      }
+    };
+
+    var video = bpf.videojs('my-video', bpfOption);
+
+    $('#debuggingYoutubeBtn, #debuggingYoutubeBtn2, #debuggingYoutubeBtn3').prop('disabled', false);
+    $('#debuggingYoutubeBtn').click(video.debugging);
+    $('#debuggingYoutubeBtn2').click(() => {video.debugging(true)});
+    $('#debuggingYoutubeBtn3').click(() => {video.debugging(false)});
+  }
+
+  var mp4;
   function playMp4() {
     var bpfOption = {
       debug: true,
       callback: function (timer, param) {
-        console.log('mp4 callback!!!', param);
+        console.log('mp4 callback!!!', timer, param);
       },
       callbackParam: {key1: 1, key2: 2},
-      callbackInterval: 10
+      callbackInterval: 10,
+      ready: function () {
+        $('#debuggingMp4Btn, #debuggingMp4Btn2, #debuggingMp4Btn3').prop('disabled', false);
+        $('#debuggingMp4Btn').click(mp4.debugging);
+        $('#debuggingMp4Btn2').click(() => {mp4.debugging(true)});
+        $('#debuggingMp4Btn3').click(() => {mp4.debugging(false)});
+      }
     };
     var videoOption = {
-      width: 800, height: 600
+      width: 400, height: 400
     }
-    var youtube = bpf.videojs('my-video2', bpfOption, videoOption);
+
+    mp4 = bpf.videojs('my-video2', bpfOption, videoOption);
+
   }
 
 </script>
