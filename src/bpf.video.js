@@ -140,6 +140,8 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     Object.assign(bpfOption, _bpfOption);
     Object.assign(videoOption, _videoOption);
     log(bpfOption, videoOption);
+    // timer interval
+    timer.interval = bpfOption.callbackInterval;
 
     // create videojs
     video = videojs.default(id, videoOption);
