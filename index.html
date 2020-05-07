@@ -30,7 +30,7 @@
     $('#playYoutubeBtn').click(function () {
       var youtube = bpf.videojs('my-video', {
         debug: true,
-        callback: function (param) {
+        callback: function (timer, param) {
           console.log('youtube callback!!!', param);
         },
         ready: function () {
@@ -45,7 +45,7 @@
   function playMp4() {
     var bpfOption = {
       debug: true,
-      callback: function (param) {
+      callback: function (timer, param) {
         console.log('mp4 callback!!!', param);
       },
       callbackParam: {key1: 1, key2: 2},

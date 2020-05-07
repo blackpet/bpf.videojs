@@ -83,7 +83,7 @@ const timer = {
     if (!!bpfOption.callback && typeof bpfOption.callback === 'function') {
       log(`callback!!! (played: ${timer.played} / opened: ${timer.opened})`);
       const param = bpfOption.callbackParam || {};
-      bpfOption.callback(param);
+      bpfOption.callback({played: timer.played, opened: timer.opened}, param);
     } else {
       log(`abstract updateProgress(). Be sure to overwrite it! (played: ${timer.played} / opened: ${timer.opened})`);
     }
