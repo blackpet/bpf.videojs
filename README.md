@@ -13,8 +13,6 @@ customize videojs
 
 Bpf.Videojs 는 [videojs](https://videojs.com)를 Customizing 하여 개발한 플레이어 입니다.
 
-참고) videojs 는 Open Source 기반의 플레이어이며, 누구나 Customizing 하여 사용할 수 있습니다.
-
 
 <br><br>
 
