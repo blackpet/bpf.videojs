@@ -144,7 +144,7 @@ debugging log 를 활성화/비활성화 하는 옵션입니다.
 
 #### callback
 
-진도체크 등과 같은 재생 중 재생시간을 자동저장할 수 있는 callback function 입니다.
+진도체크 등과 같은 재생 중 재생시간을 추적할 수 있는 callback function 입니다.
 
 
 > callback: function(timer, param)
