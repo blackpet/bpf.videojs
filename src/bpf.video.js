@@ -171,7 +171,14 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     video: video,
     bpfOption: bpfOption,
     videoOption: videoOption,
-    debugging: debugging
+    debugging: debugging,
+    getTimer: () => {
+      return {
+        opened: timer.opened,
+        played: timer.played,
+        currentTime: video.currentTime()
+      }
+    }
   }
 } // end of function BpfVideo
 

@@ -65,7 +65,7 @@
         console.log('mp4 callback!!!', timer, param);
       },
       callbackParam: {key1: 1, key2: 2},
-      callbackInterval: 15,
+      callbackInterval: 5,
       ready: function () {
         $('#debuggingMp4Btn, #debuggingMp4Btn2, #debuggingMp4Btn3').prop('disabled', false);
         $('#debuggingMp4Btn').click(mp4.debugging);
@@ -74,7 +74,7 @@
       }
     };
     var videoOption = {
-      width: 400, height: 400
+      width: 800, height: 600
     }
 
     mp4 = bpf.videojs('my-video2', bpfOption, videoOption);
