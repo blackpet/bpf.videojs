@@ -2,6 +2,8 @@
 
 Bpf.Videojs 는 [videojs](https://videojs.com)를 Customizing 하여 개발한 플레이어 입니다.
 
+참고) videojs 는 Open Source 기반의 플레이어이며, 누구나 Customizing 하여 사용할 수 있습니다.
+
 
 <br><br>
 
@@ -205,8 +207,7 @@ argument를 전달하지 않으면 상태가 toggle 됩니다.
 
 ### getTimer()
 
-> return {opened, played, currentTime}
-
+> return {opened, played, elapsedOpen, elapsedPlay, currentTime}
 
 
 
