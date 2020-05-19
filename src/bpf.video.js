@@ -46,6 +46,9 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     played: 0,
     opened: 0,
 
+    elapsedPlay: 0,
+    elapsedOpen: 0,
+
     timestamp: 0,
     elapsed: 0,
     interval: 5, // 진도체크 갱신 단위 (s)
@@ -67,16 +70,22 @@ function BpfVideo(id, _bpfOption, _videoOption) {
       if (updateProgress) log('forced updateProgress!');
 
       timer.elapsed = (new Date().getTime() - timer.timestamp) / 1000;
+
       // played time
       timer.played += player.paused() ? 0 : timer.elapsed * player.playbackRate();
+      timer.elapsedPlay += player.paused() ? 0 : timer.elapsed * player.playbackRate();
       // opened time
       timer.opened += timer.elapsed;
+      timer.elapsedOpen += timer.elapsed;
 
       timer.timestamp = new Date().getTime();
 
       // update study progress
       if (updateProgress || timer.opened % timer.interval < 1) {
         timer.updateProgress();
+
+        // reset elapsed time
+        timer.elapsedPlay = timer.elapsedOpen = 0;
       }
     },
 
@@ -85,11 +94,11 @@ function BpfVideo(id, _bpfOption, _videoOption) {
      */
     updateProgress: () => {
       if (!!bpfOption.callback && typeof bpfOption.callback === 'function') {
-        log(`callback!!! (played: ${timer.played} / opened: ${timer.opened})`);
+        log(`callback!!! timer`, getTimer());
         const param = bpfOption.callbackParam || {};
-        bpfOption.callback({played: timer.played, opened: timer.opened}, param);
+        bpfOption.callback(getTimer(), param);
       } else {
-        log(`abstract updateProgress(). Be sure to overwrite it! (played: ${timer.played} / opened: ${timer.opened})`);
+        log(`abstract updateProgress(). Be sure to overwrite it! timer`, getTimer());
       }
     }
   } // end of timer
@@ -167,18 +176,22 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     bpfOption.debug = flag;
   }
 
+  function getTimer() {
+    return {
+      opened: Math.round(timer.opened * 100) / 100,
+      played: Math.round(timer.played * 100) / 100,
+      elapsedPlay: Math.round(timer.elapsedPlay * 100) / 100,
+      elapsedOpen: Math.round(timer.elapsedOpen * 100) / 100,
+      currentTime: Math.round(video.currentTime() * 100) / 100
+    }
+  }
+
   return {
     video: video,
     bpfOption: bpfOption,
     videoOption: videoOption,
     debugging: debugging,
-    getTimer: () => {
-      return {
-        opened: timer.opened,
-        played: timer.played,
-        currentTime: video.currentTime()
-      }
-    }
+    getTimer: getTimer
   }
 } // end of function BpfVideo
 
