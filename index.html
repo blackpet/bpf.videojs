@@ -41,7 +41,7 @@
     <button id="debuggingSrcBtn" disabled>toggle debugging</button>
     <button id="debuggingSrcBtn2" disabled>enable debugging</button>
     <button id="debuggingSrcBtn3" disabled>disable debugging</button>
-<div id="my-video3"></div>
+<div id="my-video3" style="width:80%; background-color:lightpink;"></div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
@@ -60,6 +60,7 @@
     });
   });
 
+  var youtube;
   function playYoutube() {
     var bpfOption = {
       debug: true,
@@ -74,15 +75,15 @@
       sources: {src: 'https://www.youtube.com/watch?v=ahaosybofjs', type: 'video/youtube'}
     };
 
-    var video = bpf.videojs('my-video', bpfOption, videoOption);
+    youtube = bpf.videojs('my-video', bpfOption, videoOption);
 
     $('#debuggingYoutubeBtn, #debuggingYoutubeBtn2, #debuggingYoutubeBtn3').prop('disabled', false);
-    $('#debuggingYoutubeBtn').click(video.debugging);
+    $('#debuggingYoutubeBtn').click(youtube.debugging);
     $('#debuggingYoutubeBtn2').click(() => {
-      video.debugging(true)
+      youtube.debugging(true)
     });
     $('#debuggingYoutubeBtn3').click(() => {
-      video.debugging(false)
+      youtube.debugging(false)
     });
   }
 
@@ -120,7 +121,7 @@
     var bpfOption = {
       debug: true,
 
-      currentTime: 100,
+      currentTime: 40,
 
       callback: function (timer, param) {
         console.log('src callback!!!', timer, param);
@@ -142,7 +143,7 @@
 
     var source = JSON.parse($('button.set-source.active')[0].innerText);
     var videoOption = {
-      width: 800, height: 450,
+      width: 600,
       sources: source
     }
 
