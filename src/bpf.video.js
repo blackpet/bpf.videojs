@@ -16,154 +16,196 @@ require('video.js/dist/video-js.css')
 require('@videojs/themes/dist/fantasy/index.css')
 require('./bpf.video.css')
 
-let videoId;
+function BpfVideo(id, _bpfOption, _videoOption) {
 
-const bpfOption = {
-  debug: false,
+  let videoId;
+  let video;
 
-  callback: null,
-  callbackParam: null,
-  callbackInterval: 5,
+  const bpfOption = {
+    debug: false,
 
-  ready: null
-}
+    callback: null,
+    callbackParam: null,
+    callbackInterval: 5,
 
-const videoOption = {
-  width: 800,
-  height: 450,
-  // autoplay: true,
-  controls: true,
-  preload: 'auto',
+    currentTime: 0,
 
-  // youtube only allows limits up to x2
-  playbackRates: [0.2, 0.5, 1, 1.2, 1.5, 2],
-}
+    ready: null
+  }
 
-const timer = {
-  played: 0,
-  opened: 0,
+  const videoOption = {
+    width: 800,
+    height: 450,
+    // autoplay: true,
+    controls: true,
+    preload: 'auto',
 
-  timestamp: 0,
-  elapsed: 0,
-  interval: 5, // 진도체크 갱신 단위 (s)
+    // youtube only allows limits up to x2
+    playbackRates: [0.2, 0.5, 1, 1.2, 1.5, 2],
+  }
 
-  /**
-   * start timer
-   */
-  start: () => {
-    timer.timestamp = new Date().getTime();
-  },
+  const timer = {
+    played: 0,
+    opened: 0,
 
-  /**
-   * count-up timer
-   * @param player
-   */
-  increaseTime: (player, updateProgress) => {
-    log(timer);
-    if (updateProgress) log('forced updateProgress!');
+    elapsedPlay: 0,
+    elapsedOpen: 0,
 
-    timer.elapsed = (new Date().getTime() - timer.timestamp) / 1000;
-    // played time
-    timer.played += player.paused() ? 0 : timer.elapsed * player.playbackRate();
-    // opened time
-    timer.opened += timer.elapsed;
+    timestamp: 0,
+    elapsed: 0,
+    interval: 5, // 진도체크 갱신 단위 (s)
 
-    timer.timestamp = new Date().getTime();
+    /**
+     * start timer
+     */
+    start: () => {
+      timer.timestamp = new Date().getTime();
+    },
 
-    // update study progress
-    if (updateProgress || timer.opened % timer.interval < 1) {
-      timer.updateProgress();
+    /**
+     * count-up timer
+     * @param player
+     * @param forced update progress
+     */
+    increaseTime: (player, updateProgress) => {
+      log(timer);
+      if (updateProgress) log('forced updateProgress!');
+
+      timer.elapsed = (new Date().getTime() - timer.timestamp) / 1000;
+
+      // played time
+      timer.played += player.paused() ? 0 : timer.elapsed * player.playbackRate();
+      timer.elapsedPlay += player.paused() ? 0 : timer.elapsed * player.playbackRate();
+      // opened time
+      timer.opened += timer.elapsed;
+      timer.elapsedOpen += timer.elapsed;
+
+      timer.timestamp = new Date().getTime();
+
+      // update study progress
+      if (updateProgress || timer.opened % timer.interval < 1) {
+        timer.updateProgress();
+
+        // reset elapsed time
+        timer.elapsedPlay = timer.elapsedOpen = 0;
+      }
+    },
+
+    /**
+     * update study progress
+     */
+    updateProgress: () => {
+      if (!!bpfOption.callback && typeof bpfOption.callback === 'function') {
+        log(`callback!!! timer`, getTimer());
+        const param = bpfOption.callbackParam || {};
+        bpfOption.callback(getTimer(), param);
+      } else {
+        log(`abstract updateProgress(). Be sure to overwrite it! timer`, getTimer());
+      }
     }
-  },
+  } // end of timer
 
-  /**
-   * update study progress
-   */
-  updateProgress: () => {
-    if (!!bpfOption.callback && typeof bpfOption.callback === 'function') {
-      log(`callback!!! (played: ${timer.played} / opened: ${timer.opened})`);
-      const param = bpfOption.callbackParam || {};
-      bpfOption.callback(param);
-    } else {
-      log(`abstract updateProgress(). Be sure to overwrite it! (played: ${timer.played} / opened: ${timer.opened})`);
+  // on-ready videojs
+  function readyVideo() {
+    const $video = this;
+
+    log('currentSrc', $video.currentSrc());
+    log('currentType', $video.currentType());
+    log($video.el().dataset);
+
+    let options = {};
+
+    if ($video.currentType() === 'video/youtube') {
+      options = Object.assign(options, {
+        techOrder: ['youtube'],
+        forceSSL: true,
+        forceHTML5: true,
+        Origin: 'http://localhost:4000'
+      });
+    }
+
+    // current time
+    if (bpfOption.currentTime > 0) {
+      $video.currentTime(bpfOption.currentTime);
+    }
+
+    $video.options(options);
+    $video.play();
+
+    // start timer
+    timer.start();
+    $video.setInterval(function () {
+
+      timer.increaseTime($video);
+
+      // 최초에 자동재생 되지 않은 경우는 재생 하자!
+      if(timer.opened < 2 && $video.paused()) this.play();
+    }, 1000);
+
+    // execute user define ready function
+    if (!!bpfOption.ready && typeof bpfOption.ready === 'function') {
+      bpfOption.ready();
     }
   }
-} // end of timer
 
-// logger
-function log(...args) {
-  if (bpfOption.debug) {
-    console.log(videoId, args);
-  }
-}
+  // create videojs
+  function init() {
+    videoId = id;
 
-function initVideo(id) {
-  videoId = id;
-  return videojs.default(id, videoOption);
-}
+    // extends options...
+    Object.assign(bpfOption, _bpfOption);
+    Object.assign(videoOption, _videoOption);
+    log(bpfOption, videoOption);
+    // timer interval
+    timer.interval = bpfOption.callbackInterval;
 
-function readyVideo() {
-  const $video = this;
+    // create videojs
+    video = videojs.default(id, videoOption);
 
-  log('currentSrc', $video.currentSrc());
-  log('currentType', $video.currentType());
-  log($video.el().dataset);
-
-  let options = {};
-
-  if ($video.currentType() === 'video/youtube') {
-    options = Object.assign(options, {
-      techOrder: ['youtube'],
-      forceSSL: true,
-      forceHTML5: true,
-      Origin: 'http://localhost:4000'
-    });
+    video.ready(readyVideo);
+    video.on('ended', () => timer.increaseTime(video, true));
   }
 
-  $video.options(options);
-  $video.play();
+  init();
 
-  // start timer
-  timer.start();
-  $video.setInterval(function () {
-    console.log('interval each 1 sec');
-
-    timer.increaseTime($video);
-
-    // 최초에 자동재생 되지 않은 경우는 재생 하자!
-    if(timer.opened < 2 && $video.paused()) this.play();
-  }, 1000);
-
-  // execute user define ready function
-  if (!!bpfOption.ready && typeof bpfOption.ready === 'function') {
-    bpfOption.ready();
+  // logger
+  function log(...args) {
+    if (bpfOption.debug) {
+      console.log(videoId, args);
+    }
   }
+
+  function debugging(_flag) {
+    var flag = !bpfOption.debug;
+    if (typeof _flag === 'boolean') {
+      flag = _flag;
+    }
+    bpfOption.debug = flag;
+  }
+
+  function getTimer() {
+    return {
+      opened: Math.round(timer.opened * 100) / 100,
+      played: Math.round(timer.played * 100) / 100,
+      elapsedPlay: Math.round(timer.elapsedPlay * 100) / 100,
+      elapsedOpen: Math.round(timer.elapsedOpen * 100) / 100,
+      currentTime: Math.round(video.currentTime() * 100) / 100
+    }
+  }
+
+  return {
+    video: video,
+    bpfOption: bpfOption,
+    videoOption: videoOption,
+    debugging: debugging,
+    getTimer: getTimer
+  }
+} // end of function BpfVideo
+
+
+
+module.exports = (id, _bpfOption = {}, _videoOption = {}) => {
+  return new BpfVideo(id, _bpfOption, _videoOption);
 }
-
-function bpfVideojs(id, _bpfOption = {}, _videoOption = {}) {
-
-  // extends options...
-  Object.assign(bpfOption, _bpfOption);
-  Object.assign(videoOption, _videoOption);
-
-  log(bpfOption, videoOption);
-
-  this.video = initVideo(id);
-  this.video.ready(readyVideo);
-  this.video.on('ended', () => timer.increaseTime(this.video, true));
-
-
-  // this.foo = () => {
-  //   console.log('fooooooooooo~');
-  // }
-
-  return this;
-}
-
-
-
-module.exports = bpfVideojs
-
-
 
 

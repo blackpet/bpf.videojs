@@ -9,52 +9,174 @@
 <h1>BPF.Video</h1>
 
 <h2>youtube
-<button id="playYoutubeBtn">play</button>
+    <button id="playYoutubeBtn">play</button>
+    <button id="debuggingYoutubeBtn" disabled>toggle debugging</button>
+    <button id="debuggingYoutubeBtn2" disabled>enable debugging</button>
+    <button id="debuggingYoutubeBtn3" disabled>disable debugging</button>
 </h2>
 <video id="my-video" class="video-js vjs-theme-fantasy">
     <source src="https://www.youtube.com/watch?v=ahaosybofjs" type="video/youtube">
 </video>
 
 <h2>mp4
-<button id="playMp4Btn">play</button>
+    <button id="playMp4Btn">play</button>
+    <button id="debuggingMp4Btn" disabled>toggle debugging</button>
+    <button id="debuggingMp4Btn2" disabled>enable debugging</button>
+    <button id="debuggingMp4Btn3" disabled>disable debugging</button>
 </h2>
 <video id="my-video2" class="video-js vjs-theme-fantasy">
     <source src="https://www.radiantmediaplayer.com/media/bbb-360p.mp4" type="video/mp4">
 </video>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+<h2>set source
+</h2>
+<ul>
+    <li>source: <input type="text" id="source" size="50"></li>
+    <li>type:<input type="text" id="type"></li>
+</ul>
+    <button id="playSrcBtn">play</button>
+    <button id="debuggingSrcBtn" disabled>toggle debugging</button>
+    <button id="debuggingSrcBtn2" disabled>enable debugging</button>
+    <button id="debuggingSrcBtn3" disabled>disable debugging</button>
+<video id="my-video3" class="video-js vjs-theme-fantasy">
+</video>
+
+<h2>audio set source
+</h2>
+<ul>
+    <li>source: <input type="text" id="asource" size="50"></li>
+    <li>type:<input type="text" id="atype"></li>
+</ul>
+    <button id="aplaySrcBtn">play</button>
+    <button id="adebuggingSrcBtn" disabled>toggle debugging</button>
+    <button id="adebuggingSrcBtn2" disabled>enable debugging</button>
+    <button id="adebuggingSrcBtn3" disabled>disable debugging</button>
+<audio id="my-audio1" class="video-js vjs-theme-fantasy">
+</audio>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
 <script src="bpf.video.js"></script>
 <script>
 
   $(function () {
-    $('#playYoutubeBtn').click(function () {
-      var youtube = bpf.videojs('my-video', {
-        debug: true,
-        callback: function (param) {
-          console.log('youtube callback!!!', param);
-        },
-        ready: function () {
-          console.log('youtube ready!!!!!!!!!!!!!!!');
-        }
-      })
-    });
-
+    $('#playYoutubeBtn').click(playYoutube);
     $('#playMp4Btn').click(playMp4);
+    $('#playSrcBtn').click(playSrc);
+    $('#aplaySrcBtn').click(aplaySrc);
   });
 
+  function playYoutube() {
+    var bpfOption = {
+      debug: true,
+      callback: function (timer, param) {
+        console.log('youtube callback!!!', timer, param);
+      },
+      ready: function () {
+        console.log('youtube ready!!!!!!!!!!!!!!!');
+      }
+    };
+
+    var video = bpf.videojs('my-video', bpfOption);
+
+    $('#debuggingYoutubeBtn, #debuggingYoutubeBtn2, #debuggingYoutubeBtn3').prop('disabled', false);
+    $('#debuggingYoutubeBtn').click(video.debugging);
+    $('#debuggingYoutubeBtn2').click(() => {
+      video.debugging(true)
+    });
+    $('#debuggingYoutubeBtn3').click(() => {
+      video.debugging(false)
+    });
+  }
+
+  var mp4;
   function playMp4() {
     var bpfOption = {
       debug: true,
-      callback: function (param) {
-        console.log('mp4 callback!!!', param);
+      callback: function (timer, param) {
+        console.log('mp4 callback!!!', timer, param);
       },
       callbackParam: {key1: 1, key2: 2},
-      callbackInterval: 10
+      callbackInterval: 5,
+      ready: function () {
+        $('#debuggingMp4Btn, #debuggingMp4Btn2, #debuggingMp4Btn3').prop('disabled', false);
+        $('#debuggingMp4Btn').click(mp4.debugging);
+        $('#debuggingMp4Btn2').click(() => {
+          mp4.debugging(true)
+        });
+        $('#debuggingMp4Btn3').click(() => {
+          mp4.debugging(false)
+        });
+      }
     };
     var videoOption = {
       width: 800, height: 600
     }
-    var youtube = bpf.videojs('my-video2', bpfOption, videoOption);
+
+    mp4 = bpf.videojs('my-video2', bpfOption, videoOption);
+
+  }
+
+  var src;
+  function playSrc() {
+    var bpfOption = {
+      debug: true,
+
+      currentTime: 100,
+
+      callback: function (timer, param) {
+        console.log('src callback!!!', timer, param);
+      },
+      callbackParam: {key1: 1, key2: 2},
+      callbackInterval: 5,
+
+      ready: function () {
+        $('#debuggingSrcBtn, #debuggingSrcBtn2, #debuggingSrcBtn3').prop('disabled', false);
+        $('#debuggingSrcBtn').click(src.debugging);
+        $('#debuggingSrcBtn2').click(() => {
+          src.debugging(true)
+        });
+        $('#debuggingSrcBtn3').click(() => {
+          src.debugging(false)
+        });
+      }
+    };
+    var videoOption = {
+      width: 800, height: 450,
+      sources: {src: '//d2zihajmogu5jn.cloudfront.net/sintel/master.m3u8', type: 'application/x-mpegurl'}
+    }
+
+    src = bpf.videojs('my-video3', bpfOption, videoOption);
+
+  }
+  var asrc;
+  function aplaySrc() {
+    var bpfOption = {
+      debug: true,
+      callback: function (timer, param) {
+        console.log('asrc callback!!!', timer, param);
+      },
+      callbackParam: {key1: 1, key2: 2},
+      callbackInterval: 5,
+      ready: function () {
+        $('#adebuggingSrcBtn, #adebuggingSrcBtn2, #adebuggingSrcBtn3').prop('disabled', false);
+        $('#adebuggingSrcBtn').click(asrc.debugging);
+        $('#adebuggingSrcBtn2').click(() => {
+          asrc.debugging(true)
+        });
+        $('#adebuggingSrcBtn3').click(() => {
+          asrc.debugging(false)
+        });
+      }
+    };
+    var videoOption = {
+      width: 400, height: 400,
+      sources: {src: 'http://www.hochmuth.com/mp3/Bloch_Prayer.mp3', type: 'audio/mp3'},
+      poster: 'https://w.namu.la/s/9073525ef7fd39a5ac0592ae925a030eb23a122ff207e41fb4f2867bbcb4db2df961ab065f3975196f04302569878624fd23fc41a1b6e0aa92b78835064f3b7572bf9a811fefa0eb422fa503f7273541deba6e35c0a710f05bbd2bbd0d06092f'
+    }
+
+    asrc = bpf.videojs('my-audio1', bpfOption, videoOption);
+
   }
 
 </script>
