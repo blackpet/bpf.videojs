@@ -28,6 +28,8 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     callbackParam: null,
     callbackInterval: 5,
 
+    currentTime: 0,
+
     ready: null
   }
 
@@ -120,6 +122,11 @@ function BpfVideo(id, _bpfOption, _videoOption) {
         forceHTML5: true,
         Origin: 'http://localhost:4000'
       });
+    }
+
+    // current time
+    if (bpfOption.currentTime > 0) {
+      $video.currentTime(bpfOption.currentTime);
     }
 
     $video.options(options);
