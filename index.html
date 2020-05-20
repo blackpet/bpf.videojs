@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>BPF.Video</title>
+    <style>
+        button.set-source.active {
+            background-color: yellow;
+        }
+    </style>
 </head>
 <body>
 
@@ -14,9 +19,7 @@
     <button id="debuggingYoutubeBtn2" disabled>enable debugging</button>
     <button id="debuggingYoutubeBtn3" disabled>disable debugging</button>
 </h2>
-<video id="my-video" class="video-js vjs-theme-fantasy">
-    <source src="https://www.youtube.com/watch?v=ahaosybofjs" type="video/youtube">
-</video>
+<div id="my-video"></div>
 
 <h2>mp4
     <button id="playMp4Btn">play</button>
@@ -24,35 +27,21 @@
     <button id="debuggingMp4Btn2" disabled>enable debugging</button>
     <button id="debuggingMp4Btn3" disabled>disable debugging</button>
 </h2>
-<video id="my-video2" class="video-js vjs-theme-fantasy">
-    <source src="https://www.radiantmediaplayer.com/media/bbb-360p.mp4" type="video/mp4">
-</video>
+<div id="my-video2"></div>
 
 <h2>set source
 </h2>
 <ul>
-    <li>source: <input type="text" id="source" size="50"></li>
-    <li>type:<input type="text" id="type"></li>
+    <li><button id="setSource1Btn" class="set-source active">{"src" : "https://www.youtube.com/watch?v=ahaosybofjs", "type" : "video/youtube"}</button></li>
+    <li><button id="setSource2Btn" class="set-source">{"src" : "https://www.radiantmediaplayer.com/media/bbb-360p.mp4", "type" : "video/mp4"}</button></li>
+    <li><button id="setSource3Btn" class="set-source">{"src" : "//d2zihajmogu5jn.cloudfront.net/sintel/master.m3u8", "type" : "application/x-mpegurl"}</button></li>
+    <li><button id="setSource4Btn" class="set-source">{"src" : "http://www.hochmuth.com/mp3/Bloch_Prayer.mp3", "type" : "audio/mp3"}</button></li>
 </ul>
     <button id="playSrcBtn">play</button>
     <button id="debuggingSrcBtn" disabled>toggle debugging</button>
     <button id="debuggingSrcBtn2" disabled>enable debugging</button>
     <button id="debuggingSrcBtn3" disabled>disable debugging</button>
-<video id="my-video3" class="video-js vjs-theme-fantasy">
-</video>
-
-<h2>audio set source
-</h2>
-<ul>
-    <li>source: <input type="text" id="asource" size="50"></li>
-    <li>type:<input type="text" id="atype"></li>
-</ul>
-    <button id="aplaySrcBtn">play</button>
-    <button id="adebuggingSrcBtn" disabled>toggle debugging</button>
-    <button id="adebuggingSrcBtn2" disabled>enable debugging</button>
-    <button id="adebuggingSrcBtn3" disabled>disable debugging</button>
-<audio id="my-audio1" class="video-js vjs-theme-fantasy">
-</audio>
+<div id="my-video3" style="width:80%; background-color:lightpink;"></div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
@@ -63,9 +52,15 @@
     $('#playYoutubeBtn').click(playYoutube);
     $('#playMp4Btn').click(playMp4);
     $('#playSrcBtn').click(playSrc);
-    $('#aplaySrcBtn').click(aplaySrc);
+
+    $('button.set-source').click(function() {
+      $('button.set-source.active').removeClass('active');
+
+      $(this).addClass('active');
+    });
   });
 
+  var youtube;
   function playYoutube() {
     var bpfOption = {
       debug: true,
@@ -76,16 +71,19 @@
         console.log('youtube ready!!!!!!!!!!!!!!!');
       }
     };
+    var videoOption = {
+      sources: {src: 'https://www.youtube.com/watch?v=ahaosybofjs', type: 'video/youtube'}
+    };
 
-    var video = bpf.videojs('my-video', bpfOption);
+    youtube = bpf.videojs('my-video', bpfOption, videoOption);
 
     $('#debuggingYoutubeBtn, #debuggingYoutubeBtn2, #debuggingYoutubeBtn3').prop('disabled', false);
-    $('#debuggingYoutubeBtn').click(video.debugging);
+    $('#debuggingYoutubeBtn').click(youtube.debugging);
     $('#debuggingYoutubeBtn2').click(() => {
-      video.debugging(true)
+      youtube.debugging(true)
     });
     $('#debuggingYoutubeBtn3').click(() => {
-      video.debugging(false)
+      youtube.debugging(false)
     });
   }
 
@@ -110,7 +108,8 @@
       }
     };
     var videoOption = {
-      width: 800, height: 600
+      width: 800, height: 600,
+      sources: {src: 'https://www.radiantmediaplayer.com/media/bbb-360p.mp4', type: 'video/mp4'}
     }
 
     mp4 = bpf.videojs('my-video2', bpfOption, videoOption);
@@ -122,7 +121,7 @@
     var bpfOption = {
       debug: true,
 
-      currentTime: 100,
+      currentTime: 40,
 
       callback: function (timer, param) {
         console.log('src callback!!!', timer, param);
@@ -141,41 +140,14 @@
         });
       }
     };
+
+    var source = JSON.parse($('button.set-source.active')[0].innerText);
     var videoOption = {
-      width: 800, height: 450,
-      sources: {src: '//d2zihajmogu5jn.cloudfront.net/sintel/master.m3u8', type: 'application/x-mpegurl'}
+      width: 600,
+      sources: source
     }
 
     src = bpf.videojs('my-video3', bpfOption, videoOption);
-
-  }
-  var asrc;
-  function aplaySrc() {
-    var bpfOption = {
-      debug: true,
-      callback: function (timer, param) {
-        console.log('asrc callback!!!', timer, param);
-      },
-      callbackParam: {key1: 1, key2: 2},
-      callbackInterval: 5,
-      ready: function () {
-        $('#adebuggingSrcBtn, #adebuggingSrcBtn2, #adebuggingSrcBtn3').prop('disabled', false);
-        $('#adebuggingSrcBtn').click(asrc.debugging);
-        $('#adebuggingSrcBtn2').click(() => {
-          asrc.debugging(true)
-        });
-        $('#adebuggingSrcBtn3').click(() => {
-          asrc.debugging(false)
-        });
-      }
-    };
-    var videoOption = {
-      width: 400, height: 400,
-      sources: {src: 'http://www.hochmuth.com/mp3/Bloch_Prayer.mp3', type: 'audio/mp3'},
-      poster: 'https://w.namu.la/s/9073525ef7fd39a5ac0592ae925a030eb23a122ff207e41fb4f2867bbcb4db2df961ab065f3975196f04302569878624fd23fc41a1b6e0aa92b78835064f3b7572bf9a811fefa0eb422fa503f7273541deba6e35c0a710f05bbd2bbd0d06092f'
-    }
-
-    asrc = bpf.videojs('my-audio1', bpfOption, videoOption);
 
   }
 

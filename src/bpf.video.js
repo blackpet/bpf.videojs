@@ -18,8 +18,11 @@ require('./bpf.video.css')
 
 function BpfVideo(id, _bpfOption, _videoOption) {
 
+  let containerId;
   let videoId;
   let video;
+
+  let initdone = false;
 
   const bpfOption = {
     debug: false,
@@ -55,11 +58,22 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     elapsed: 0,
     interval: 5, // 진도체크 갱신 단위 (s)
 
+    intervalId: null,
+
+    tiktok: true, // 타이머 작동 유무
+
     /**
      * start timer
      */
     start: () => {
       timer.timestamp = new Date().getTime();
+    },
+
+    /**
+     * dispose timer (clearInterval)
+     */
+    dispose: () => {
+      video.clearInterval(timer.intervalId);
     },
 
     /**
@@ -126,7 +140,24 @@ function BpfVideo(id, _bpfOption, _videoOption) {
 
     // current time
     if (bpfOption.currentTime > 0) {
-      $video.currentTime(bpfOption.currentTime);
+      // wait for video metadata to load, then set time
+      $video.on("loadedmetadata", function(){
+        $video.setTimeout(() => {
+          this.currentTime(bpfOption.currentTime);
+          log(`setCurrentTime to ${bpfOption.currentTime}`, 'loadedmetadata');
+        }, 500);
+      });
+
+      // iPhone/iPad need to play first, then set the time
+      // events: https://www.w3.org/TR/html5/embedded-content-0.html#mediaevents
+      $video.on("canplaythrough", function(){
+        if(!initdone)
+        {
+          log(`setCurrentTime to ${bpfOption.currentTime}`, 'canplaythrough');
+          this.currentTime(bpfOption.currentTime);
+          initdone = true;
+        }
+      });
     }
 
     $video.options(options);
@@ -134,7 +165,7 @@ function BpfVideo(id, _bpfOption, _videoOption) {
 
     // start timer
     timer.start();
-    $video.setInterval(function () {
+    timer.intervalId = $video.setInterval(function () {
 
       timer.increaseTime($video);
 
@@ -148,9 +179,53 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     }
   }
 
+  // create media element by type
+  function createMedia() {
+    // detect media type
+    const type = _videoOption.sources instanceof Array ? _videoOption.sources[0].type : _videoOption.sources.type;
+    // video / audio Exception type arrays...
+    const videoType = ['application/x-mpegurl'];
+    const audioType = [];
+
+    // create media element by type
+    let tag;
+    if (type.startsWith('video/')) {
+      tag = 'video';
+    } else if (type.startsWith('audio/')) {
+      tag = 'audio';
+    } else if (videoType.indexOf(type) > -1) {
+      tag = 'video';
+    } else if (audioType.indexOf(type) > -1) {
+      tag = 'audio';
+    } else {
+      throw new Error(`Not suppored media type "${type}"`);
+    }
+    const media = document.createElement(tag);
+    media.classList.add('video-js', 'vjs-theme-fantasy', 'bpf-video');
+
+    return media;
+  }
+
+  function disposeExistsPlayer() {
+    // dispose legacy videojs if exists
+    if (!!document.querySelector(`#${containerId} .bpf-video`) && !!document.querySelector(`#${containerId} .bpf-video`).player) {
+      document.querySelector(`#${containerId} .bpf-video`).player.dispose();
+    }
+  }
+
   // create videojs
   function init() {
-    videoId = id;
+    containerId = id;
+    // generate random video id
+    videoId = id + '-' + Math.random().toString(36).substring(2, 10);
+
+    // dispose legacy videojs if exists
+    disposeExistsPlayer();
+
+    // create media element by type
+    const media = createMedia();
+    media.id = videoId;
+    document.getElementById(id).insertAdjacentElement('afterbegin', media);
 
     // extends options...
     Object.assign(bpfOption, _bpfOption);
@@ -160,7 +235,7 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     timer.interval = bpfOption.callbackInterval;
 
     // create videojs
-    video = videojs.default(id, videoOption);
+    video = videojs.default(videoId, videoOption);
 
     video.ready(readyVideo);
     video.on('ended', () => timer.increaseTime(video, true));
@@ -189,7 +264,9 @@ function BpfVideo(id, _bpfOption, _videoOption) {
       played: Math.round(timer.played * 100) / 100,
       elapsedPlay: Math.round(timer.elapsedPlay * 100) / 100,
       elapsedOpen: Math.round(timer.elapsedOpen * 100) / 100,
-      currentTime: Math.round(video.currentTime() * 100) / 100
+      currentTime: Math.round(video.currentTime() * 100) / 100,
+
+      dispose: timer.dispose
     }
   }
 
@@ -198,7 +275,8 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     bpfOption: bpfOption,
     videoOption: videoOption,
     debugging: debugging,
-    getTimer: getTimer
+    getTimer: getTimer,
+    dispose: disposeExistsPlayer
   }
 } // end of function BpfVideo
 
