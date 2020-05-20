@@ -55,11 +55,22 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     elapsed: 0,
     interval: 5, // 진도체크 갱신 단위 (s)
 
+    intervalId: null,
+
+    tiktok: true, // 타이머 작동 유무
+
     /**
      * start timer
      */
     start: () => {
       timer.timestamp = new Date().getTime();
+    },
+
+    /**
+     * dispose timer (clearInterval)
+     */
+    dispose: () => {
+      video.clearInterval(timer.intervalId);
     },
 
     /**
@@ -134,7 +145,7 @@ function BpfVideo(id, _bpfOption, _videoOption) {
 
     // start timer
     timer.start();
-    $video.setInterval(function () {
+    timer.intervalId = $video.setInterval(function () {
 
       timer.increaseTime($video);
 
@@ -189,7 +200,9 @@ function BpfVideo(id, _bpfOption, _videoOption) {
       played: Math.round(timer.played * 100) / 100,
       elapsedPlay: Math.round(timer.elapsedPlay * 100) / 100,
       elapsedOpen: Math.round(timer.elapsedOpen * 100) / 100,
-      currentTime: Math.round(video.currentTime() * 100) / 100
+      currentTime: Math.round(video.currentTime() * 100) / 100,
+
+      dispose: timer.dispose
     }
   }
 
