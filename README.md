@@ -163,6 +163,8 @@ callback()이 실행될 실행 주기 (초)
 videojs 원본 option 입니다. 
 기본적으로 {width, height} 등을 사용할 수 있습니다.
 
+참조: [Video.js Options Reference](https://docs.videojs.com/tutorial-options.html)
+
 
 
 
@@ -205,7 +207,7 @@ argument를 전달하지 않으면 상태가 toggle 됩니다.
 
 ### getTimer()
 
-> return {opened, played, currentTime}
+> return {opened, played, elapsedOpen, elapsedPlay, currentTime}
 
 
 
