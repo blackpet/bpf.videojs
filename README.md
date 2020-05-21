@@ -215,7 +215,7 @@ videojs 원본 option 입니다.
 bpf.videojs 로 video 생성 시 반환되는 자료형
 
 
-> {video, bpfOption, videoOption, debugging, getTimer()}
+> {video, bpfOption, videoOption, debugging, getTimer(), dispose()}
 
 
 ### video
