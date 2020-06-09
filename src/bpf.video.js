@@ -241,6 +241,11 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     // attach events
     video.on('seeked', () => timer.increaseTime(video, true));
     video.on('ended', () => timer.increaseTime(video, true));
+
+    // disable browser context menu on video
+    video.on('contextmenu', function(e) {
+      e.preventDefault();
+    });
   }
 
   init();
