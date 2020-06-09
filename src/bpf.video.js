@@ -141,7 +141,7 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     // current time
     if (bpfOption.currentTime > 0) {
       // wait for video metadata to load, then set time
-      $video.on("loadedmetadata", function(){
+      $video.on('loadedmetadata', function () {
         $video.setTimeout(() => {
           this.currentTime(bpfOption.currentTime);
           log(`setCurrentTime to ${bpfOption.currentTime}`, 'loadedmetadata');
@@ -150,9 +150,8 @@ function BpfVideo(id, _bpfOption, _videoOption) {
 
       // iPhone/iPad need to play first, then set the time
       // events: https://www.w3.org/TR/html5/embedded-content-0.html#mediaevents
-      $video.on("canplaythrough", function(){
-        if(!initdone)
-        {
+      $video.on('canplaythrough', function () {
+        if (!initdone) {
           log(`setCurrentTime to ${bpfOption.currentTime}`, 'canplaythrough');
           this.currentTime(bpfOption.currentTime);
           initdone = true;
@@ -238,6 +237,9 @@ function BpfVideo(id, _bpfOption, _videoOption) {
     video = videojs.default(videoId, videoOption);
 
     video.ready(readyVideo);
+
+    // attach events
+    video.on('seeked', () => timer.increaseTime(video, true));
     video.on('ended', () => timer.increaseTime(video, true));
   }
 
