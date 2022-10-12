@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@videojs/themes": "^1.0.0",
-    "video.js": "^7.14.3",
+    "video.js": "^7.20.3",
     "videojs-youtube": "^2.6.1"
   }
 }
